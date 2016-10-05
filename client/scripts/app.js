@@ -2,7 +2,8 @@
 $(document).ready(function () {
 
   window.app = {
-    server: 'https://shermanispoop.herokuapp.com/classes/messages',
+    // server: 'https://shermanispoop.herokuapp.com/classes/messages',
+    server: 'http://127.0.0.1:3000/classes/messages',
     firstFetch: true,
     allMsgs: {},
     rooms: {},
@@ -52,7 +53,8 @@ $(document).ready(function () {
         url: app.server,
         type: 'POST',
         data: JSON.stringify(message),
-        // contentType: 'application/json',
+        contentType: 'application/json',
+        dataType: 'json',
         success: function (data) {
           console.log('chatterbox: Message sent');
           app.fetch();
