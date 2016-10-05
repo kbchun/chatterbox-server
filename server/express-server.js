@@ -53,13 +53,15 @@ app.use(express.static( __dirname + '/../client'));
 
 app.get('/classes/messages', function(request, response) {
   statusCode = 200;
-  response.writeHead(statusCode, headers);
+  response.setHeader('Last-Modified', (new Date()).toUTCString());
+  // response.writeHead(statusCode, headers);
   // response.end(JSON.stringify({results: msgs}));
-  response.status(status).send(storage);
+  response.status(statusCode).send(storage);
 });
 
 app.post('/classes/messages', function(request, response) {
   var status = 201;
+  response.setHeader('Last-Modified', (new Date()).toUTCString());
   response.writeHead(statusCode, headers);
   request.on('data', function(msg) {
     msg = JSON.parse(msg);
@@ -79,8 +81,9 @@ app.post('/classes/messages', function(request, response) {
   request.on('end', function() {
     postToFile();
   });
-  res.end(JSON.stringify({}));
+  response.end(JSON.stringify({}));
   // response.end(JSON.stringify({results: msgs}));
 });
 
+// app.listen(3000);
 app.listen(process.env.PORT);
