@@ -1,4 +1,3 @@
-var fs = require('fs');
 /*************************************************************
 
 You should implement your request handler function in this file.
@@ -12,15 +11,45 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
-var messages = {
-  results: [{username: 'chatterbot', text: 'Welcome!', roomname: 'lobby'}]
+var fs = require('fs');
+
+var file = 'data.json';
+var msgs = [];
+
+var readFile = function(data) {
+  fs.readFile(file, (err, data) => {
+    if (err) { 
+      throw err; 
+    }
+    msgs = JSON.parse(data);
+  });
 };
 
-fs.writeFile('./data.json', messages, 'utf8', function(err) {
-  if (err) { return console.log(err); }
+var postToFile = function() {
+  fs.writeFile(file, JSON.stringify(msgs), (err) => {
+    if (err) { 
+      throw err; 
+    }
+    console.log('It\'s saved!');
+  });
+};
 
-  console.log('success');
+fs.open(file, 'r', (err, data) => {
+  if (err) {
+    if (err.code === 'ENOENT') {
+      console.error('myfile does not exist');
+      return;
+    } else {
+      throw err;
+    }
+  } else {
+    readFile(data);
+  }
 });
+
+// var storage = {
+//   results: []
+// };
 
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
@@ -40,28 +69,40 @@ var requestHandler = function(request, response) {
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
 
   // The outgoing status.
-  var statusCode = 404;
+  var statusCode = 200;
 
   // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
-
+  
   if (request.url === '/classes/messages') {
     if (request.method === 'GET') {
       statusCode = 200;
+
     } else if (request.method === 'POST') {
       statusCode = 201;
-
       request.on('data', function(msg) {
-        messages.results.push(JSON.parse(msg));
+        msg = JSON.parse(msg);
+        msgs.push({
+          username: msg.username,
+          text: msg.text,
+          roomname: msg.roomname,
+          createdAt: new Date()
+        });
       });
-    }
-  }
 
-  if (request.method === 'OPTIONS') {
+      request.on('end', function() {
+        postToFile();
+      });
+      
+    }
+
+  } else if (request.method === 'OPTIONS') {
     response.end(defaultCorsHeaders);
     return;
-  }
 
+  } else {
+    statusCode = 404;
+  }
 
   // Tell the client we are sending them plain text.
   //
@@ -80,7 +121,8 @@ var requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end(JSON.stringify(messages));
+  // response.end(JSON.stringify(storage));
+  response.end(JSON.stringify({results: msgs}));
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
