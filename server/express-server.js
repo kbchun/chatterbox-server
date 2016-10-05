@@ -81,7 +81,7 @@ app.post('/classes/messages', function(request, response) {
   request.on('end', function() {
     postToFile();
   });
-  response.end(JSON.stringify({}));
+  response.end(JSON.stringify(storage));
   // response.end(JSON.stringify({results: msgs}));
 });
 

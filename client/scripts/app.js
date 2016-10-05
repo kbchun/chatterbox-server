@@ -68,7 +68,7 @@ $(document).ready(function () {
         url: app.server,
         type: 'POST',
         data: JSON.stringify(message),
-        contentType: 'application/json',
+        // contentType: 'application/json',
         dataType: 'json',
         success: function (data) {
           console.log('chatterbox: Message sent');
