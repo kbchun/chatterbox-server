@@ -1,89 +1,59 @@
 var express = require('express');
-var fs = require('fs');
-var http = require('http');
+var bodyParser = require('body-parser');
 var path = require('path');
-var app = express();
+var multer = require('multer'); // v1.0.5
+var fs = require('fs');
 
-var headers = {
-  'access-control-allow-origin': '*',
-  'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'access-control-allow-headers': 'content-type, accept',
-  'access-control-max-age': 10 // Seconds.
-};
+// Setup
+var storagePath = './server/storage.json';
+var app = express(); // actually creates HTTP server 
+var storage = {"results": []};
+var upload = multer(); // for parsing multipart/form-data
 
-var storage = {
-  results: []
-};
+// Load stored content into memory
+fs.readFile(storagePath, (err, data) => {
+  storage = JSON.parse(data.toString());
+});
 
-var file = 'data.json';
-var msgs = [];
+app.use(function(req, res, next) { // passes to all request methods
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
 
-var readFile = function(data) {
-  fs.readFile(file, (err, data) => {
-    if (err) { 
-      throw err; 
-    }
-    msgs = JSON.parse(data);
-  });
-};
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 
-var postToFile = function() {
-  fs.writeFile(file, JSON.stringify(msgs), (err) => {
-    if (err) { 
-      throw err; 
-    }
-    console.log('It\'s saved!');
-  });
-};
+app.use(express.static('client'));
 
-fs.open(file, 'r', (err, data) => {
-  if (err) {
-    if (err.code === 'ENOENT') {
-      console.error('myfile does not exist');
-      return;
-    } else {
-      throw err;
-    }
-  } else {
-    readFile(data);
+// Serve the HTML page
+app.get('/', function(req, res) {
+  res.sendFile(path.join(__dirname, '/../client/index.html'));
+});
+
+// Routing
+app.get('/classes/messages', function(req, res) { // 'next' parameter is like switch statement
+  var status = 200;
+  var tempStorage = {};
+  tempStorage.results = storage.results.slice();
+  if (req.query.order) {
+    tempStorage.results.reverse();
   }
+
+  res.setHeader('Last-Modified', (new Date()).toUTCString()); // get 304 without this line
+  res.status(status).send(tempStorage); // don't have to stringify?
 });
 
-app.use(express.static( __dirname + '/../client'));
-
-app.get('/classes/messages', function(request, response) {
-  statusCode = 200;
-  response.setHeader('Last-Modified', (new Date()).toUTCString());
-  // response.writeHead(statusCode, headers);
-  // response.end(JSON.stringify({results: msgs}));
-  response.status(statusCode).send(storage);
-});
-
-app.post('/classes/messages', function(request, response) {
+app.post('/classes/messages', function(req, res) {
   var status = 201;
-  response.setHeader('Last-Modified', (new Date()).toUTCString());
-  response.writeHead(statusCode, headers);
-  request.on('data', function(msg) {
-    msg = JSON.parse(msg);
-    msgs.push({
-      username: msg.username,
-      text: msg.text,
-      roomname: msg.roomname,
-      createdAt: new Date()
-    });
-    storage.results.push({
-      username: msg.username,
-      text: msg.text,
-      roomname: msg.roomname,
-      createdAt: new Date()
-    });
+
+  res.setHeader('Last-Modified', (new Date()).toUTCString()); // get 304 without this line
+  var postReq = req.body;
+  postReq.createdAt = new Date();
+  storage.results.push(postReq);
+  fs.writeFile(storagePath, JSON.stringify(storage), (err, data) => {
   });
-  request.on('end', function() {
-    postToFile();
-  });
-  response.end(JSON.stringify(storage));
-  // response.end(JSON.stringify({results: msgs}));
+  res.end(JSON.stringify({}));
 });
 
-// app.listen(3000);
 app.listen(process.env.PORT);
