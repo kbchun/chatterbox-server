@@ -57,8 +57,8 @@ app.get('/classes/messages', function(request, response) {
   response.setHeader('Last-Modified', (new Date()).toUTCString());
   response.writeHead(statusCode, headers);
   // response.end(JSON.stringify({results: msgs}));
-  response.end(JSON.stringify(storage));
-  // response.status(statusCode).send(storage);
+  // response.end(JSON.stringify(storage));
+  response.status(statusCode).send(storage);
 });
 
 app.post('/classes/messages', function(request, response) {
@@ -83,7 +83,7 @@ app.post('/classes/messages', function(request, response) {
   // request.on('end', function() {
   //   postToFile();
   // });
-  response.end(JSON.stringify(storage));
+  response.end(JSON.stringify({}));
   // response.end(JSON.stringify({results: msgs}));
 });
 
