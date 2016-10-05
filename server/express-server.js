@@ -1,4 +1,3 @@
-
 var express = require('express');
 var fs = require('fs');
 var http = require('http');
@@ -16,45 +15,48 @@ var storage = {
   results: []
 };
 
-// var file = 'data.json';
-// var msgs = [];
+var file = 'data.json';
+var msgs = [];
 
-// var readFile = function(data) {
-//   fs.readFile(file, (err, data) => {
-//     if (err) { 
-//       throw err; 
-//     }
-//     msgs = JSON.parse(data);
-//   });
-// };
+var readFile = function() {
+  fs.readFile(file, (err, data) => {
+    if (err) { 
+      throw err; 
+    }
+    msgs = JSON.parse(data);
+    storage.results = JSON.parse(data);
+  });
+};
 
-// var postToFile = function() {
-//   fs.writeFile(file, JSON.stringify(msgs), (err) => {
-//     if (err) { 
-//       throw err; 
-//     }
-//     console.log('It\'s saved!');
-//   });
-// };
+var postToFile = function() {
+  fs.writeFile(file, JSON.stringify(msgs), (err) => {
+    if (err) { 
+      throw err; 
+    }
+    console.log('It\'s saved!');
 
-// fs.open(file, 'r', (err, data) => {
-//   if (err) {
-//     if (err.code === 'ENOENT') {
-//       console.error('myfile does not exist');
-//       return;
-//     } else {
-//       throw err;
-//     }
-//   } else {
-//     readFile(data);
-//   }
-// });
+  });
+};
+
+fs.open(file, 'r', (err, data) => {
+  if (err) {
+    if (err.code === 'ENOENT') {
+      console.error('myfile does not exist');
+      return;
+    } else {
+      throw err;
+    }
+  } else {
+    readFile();
+  }
+});
 
 app.use(express.static( __dirname + '/../client'));
 
 app.get('/classes/messages', function(request, response) {
   statusCode = 200;
   response.setHeader('Last-Modified', (new Date()).toUTCString());
+  readFile();
   // response.writeHead(statusCode, headers);
   // response.end(JSON.stringify({results: msgs}));
   // response.end(JSON.stringify(storage));
@@ -76,12 +78,12 @@ app.post('/classes/messages', function(request, response) {
   response.writeHead(statusCode, headers);
   request.on('data', function(msg) {
     msg = JSON.parse(msg);
-    // msgs.push({
-    //   username: msg.username,
-    //   text: msg.text,
-    //   roomname: msg.roomname,
-    //   createdAt: new Date()
-    // });
+    msgs.push({
+      username: msg.username,
+      text: msg.text,
+      roomname: msg.roomname,
+      createdAt: new Date()
+    });
     storage.results.push({
       username: msg.username,
       text: msg.text,
@@ -90,7 +92,7 @@ app.post('/classes/messages', function(request, response) {
     });
   });
   // request.on('end', function() {
-  //   postToFile();
+    postToFile();
   // });
   response.end(JSON.stringify({}));
   // response.end(JSON.stringify({results: msgs}));
