@@ -2,8 +2,8 @@
 $(document).ready(function () {
 
   window.app = {
-    server: 'https://shermanispoop.herokuapp.com/classes/messages',
-    // server: 'http://127.0.0.1:3000/classes/messages',
+    // server: 'https://shermanispoop.herokuapp.com/classes/messages',
+    server: 'http://127.0.0.1:3000/classes/messages',
     firstFetch: true,
     allMsgs: {},
     rooms: {},
@@ -21,6 +21,21 @@ $(document).ready(function () {
           'roomname': app.selectedRoom
         });
         $('#text-box').val('');
+      });
+      $('#text-box').bind('enterKey', function(e) {
+        var text = $('#text-box').val();
+        var username = window.location.search.slice(window.location.search.indexOf('=') + 1);
+        app.send({
+          'text': text,
+          'username': username,
+          'roomname': app.selectedRoom
+        });
+        $('#text-box').val('');
+      });
+      $('#text-box').keyup(function(e) {
+        if (e.keyCode === 13) {
+          $(this).trigger('enterKey');
+        }
       });
 
       // change selected room
