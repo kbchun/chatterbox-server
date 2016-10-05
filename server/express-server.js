@@ -75,4 +75,4 @@ app.post('/classes/messages', function(request, response) {
   response.end(JSON.stringify({results: msgs}));
 });
 
-app.listen(3000);
+app.listen(process.env.PORT);
