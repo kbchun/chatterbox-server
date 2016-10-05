@@ -56,7 +56,6 @@ app.use(express.static( __dirname + '/../client'));
 app.get('/classes/messages', function(request, response) {
   statusCode = 200;
   response.setHeader('Last-Modified', (new Date()).toUTCString());
-  readFile();
   // response.writeHead(statusCode, headers);
   // response.end(JSON.stringify({results: msgs}));
   // response.end(JSON.stringify(storage));
