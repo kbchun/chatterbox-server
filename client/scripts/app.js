@@ -87,7 +87,7 @@ $(document).ready(function () {
         url: app.server,
         type: 'GET',
         success: function (data) {
-          data = JSON.parse(data);
+          // data = JSON.parse(data);
           app.fetchCompleted(data.results);
           console.log('chatterbox: Message fetched');
         },
