@@ -2,7 +2,7 @@
 $(document).ready(function () {
 
   window.app = {
-    server: 'http://127.0.0.1:3000/classes/messages',
+    server: 'https://shermanispoop.herokuapp.com/classes/messages',
     firstFetch: true,
     allMsgs: {},
     rooms: {},
