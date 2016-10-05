@@ -54,7 +54,8 @@ app.use(express.static( __dirname + '/../client'));
 app.get('/classes/messages', function(request, response) {
   statusCode = 200;
   response.writeHead(statusCode, headers);
-  response.end(JSON.stringify({results: msgs}));
+  // response.end(JSON.stringify({results: msgs}));
+  response.status(status).send(storage);
 });
 
 app.post('/classes/messages', function(request, response) {
@@ -68,11 +69,18 @@ app.post('/classes/messages', function(request, response) {
       roomname: msg.roomname,
       createdAt: new Date()
     });
+    storage.results.push({
+      username: msg.username,
+      text: msg.text,
+      roomname: msg.roomname,
+      createdAt: new Date()
+    });
   });
   request.on('end', function() {
     postToFile();
   });
-  response.end(JSON.stringify({results: msgs}));
+  res.end(JSON.stringify({}));
+  // response.end(JSON.stringify({results: msgs}));
 });
 
 app.listen(process.env.PORT);
